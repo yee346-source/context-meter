@@ -25,6 +25,11 @@ test('falls back to cwd when workspace missing', () => {
   assert.equal(parsed?.workspaceDir, '/somewhere');
 });
 
+test('tolerates a UTF-8 BOM before the JSON', () => {
+  const parsed = parseInput('﻿' + JSON.stringify({ cwd: '/somewhere' }));
+  assert.equal(parsed?.workspaceDir, '/somewhere');
+});
+
 test('returns null on invalid JSON', () => {
   assert.equal(parseInput('{oops'), null);
 });

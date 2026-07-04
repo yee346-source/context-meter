@@ -3,7 +3,7 @@ import type { SessionInput } from './types.js';
 export function parseInput(raw: string): SessionInput | null {
   let j: unknown;
   try {
-    j = JSON.parse(raw);
+    j = JSON.parse(raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw);
   } catch {
     return null;
   }

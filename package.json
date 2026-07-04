@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test test/",
+    "test": "npm run build && node --test",
     "prepublishOnly": "npm run build"
   },
   "repository": "github:yee346-source/context-meter",
