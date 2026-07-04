@@ -1,0 +1,34 @@
+{
+  "name": "context-meter",
+  "version": "0.1.0",
+  "description": "Real-time context-window usage bar for your Claude Code statusline",
+  "type": "module",
+  "bin": {
+    "context-meter": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test test/",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": "github:yee346-source/context-meter",
+  "keywords": [
+    "claude-code",
+    "statusline",
+    "context-window",
+    "cli",
+    "tokens"
+  ],
+  "author": "yee346-source",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3"
+  }
+}
