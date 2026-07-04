@@ -1,0 +1,4 @@
+{"type":"assistant","message":{"usage":{"input_tokens":1000,"cache_read_input_tokens":4000}}}
+this line is not json at all
+{"type":"assistant","message":{"nope":true}}
+{broken json
