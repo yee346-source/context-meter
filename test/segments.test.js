@@ -48,3 +48,8 @@ test('cost and duration return null when data missing', () => {
   assert.equal(costSegment(data({ costUsd: null }), DEFAULT_CONFIG), null);
   assert.equal(durationSegment(data({ durationMs: null }), DEFAULT_CONFIG), null);
 });
+
+test('cost segment formats zero and negative values', () => {
+  assert.equal(costSegment(data({ costUsd: 0 }), DEFAULT_CONFIG), '$0.00');
+  assert.equal(costSegment(data({ costUsd: -1.42 }), DEFAULT_CONFIG), '-$1.42');
+});
