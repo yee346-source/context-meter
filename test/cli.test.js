@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -34,4 +34,42 @@ test('prints fallback on garbage stdin', () => {
   const result = runCli('{not json');
   assert.equal(result.status, 0);
   assert.equal(result.stdout.trim(), 'context-meter');
+});
+
+test('falls back when stdin never closes', async () => {
+  await new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [cliPath], {
+      stdio: ['pipe', 'pipe', 'ignore'],
+      env
+    });
+
+    let stdout = '';
+    let finished = false;
+
+    const guard = setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      child.kill('SIGKILL');
+      reject(new Error('CLI did not exit within 5s when stdin never closed'));
+    }, 5000);
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+
+    child.on('exit', (code) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(guard);
+      try {
+        assert.equal(code, 0);
+        assert.equal(stdout.trim(), 'context-meter');
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    // Deliberately write nothing and never end stdin.
+  });
 });

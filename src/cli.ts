@@ -7,17 +7,46 @@ import { renderLine } from './render.js';
 import type { SegmentData } from './types.js';
 
 const FALLBACK = 'context-meter';
+const STDIN_TIMEOUT_MS = 1500;
 
-async function readStdin(): Promise<string> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk as Buffer);
-  }
-  return Buffer.concat(chunks).toString('utf8');
+async function readStdin(): Promise<string | null> {
+  if (process.stdin.isTTY) return null;
+
+  return new Promise<string | null>((resolve) => {
+    const chunks: Buffer[] = [];
+    let settled = false;
+
+    const finish = (result: string | null): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      process.stdin.destroy();
+      finish(null);
+    }, STDIN_TIMEOUT_MS);
+
+    process.stdin.on('data', (chunk: Buffer) => {
+      chunks.push(chunk);
+    });
+    process.stdin.on('end', () => {
+      finish(Buffer.concat(chunks).toString('utf8'));
+    });
+    process.stdin.on('error', () => {
+      finish(null);
+    });
+  });
 }
 
 async function main(): Promise<void> {
-  const input = parseInput(await readStdin());
+  const stdin = await readStdin();
+  if (stdin === null) {
+    console.log(FALLBACK);
+    return;
+  }
+  const input = parseInput(stdin);
   if (input === null) {
     console.log(FALLBACK);
     return;
