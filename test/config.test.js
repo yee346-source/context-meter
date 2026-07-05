@@ -28,3 +28,9 @@ test('mergeConfig drops invalid values individually', () => {
 test('mergeConfig ignores non-object input', () => {
   assert.deepEqual(mergeConfig('nope'), DEFAULT_CONFIG);
 });
+
+test('mergeConfig resets both thresholds when only warn is raised above default danger', () => {
+  // danger stays at the default (80), so warn (95) > danger triggers the reset-both behavior.
+  const cfg = mergeConfig({ thresholds: { warn: 95 } });
+  assert.deepEqual(cfg.thresholds, DEFAULT_CONFIG.thresholds);
+});

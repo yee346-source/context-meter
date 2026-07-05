@@ -36,6 +36,27 @@ test('prints fallback on garbage stdin', () => {
   assert.equal(result.stdout.trim(), 'context-meter');
 });
 
+test('exits 0 when CONTEXT_METER_CONFIG points at a directory', () => {
+  const payload = JSON.stringify({
+    transcript_path: fixture,
+    model: { display_name: 'Opus 4.8' },
+    workspace: { current_dir: tmpdir() },
+    cost: { total_cost_usd: 1.42, total_duration_ms: 1380000 }
+  });
+  const dirEnv = { ...process.env, CONTEXT_METER_CONFIG: tmpdir() };
+  const result = spawnSync(process.execPath, [cliPath], { input: payload, encoding: 'utf8', env: dirEnv });
+  assert.equal(result.status, 0);
+  const lines = result.stdout.split('\n').filter((l) => l.length > 0);
+  assert.equal(lines.length, 1);
+  assert.ok(lines[0].length > 0);
+  // loadConfig catches the EISDIR read failure and falls back to DEFAULT_CONFIG,
+  // so the CLI still renders the full statusline from valid input.
+  assert.equal(
+    stripAnsi(result.stdout.trim()),
+    '▓▓▓▓▓▓░░░░ 62% · 124k/200k · Opus 4.8 · $1.42 · 23m'
+  );
+});
+
 test('falls back when stdin never closes', async () => {
   await new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [cliPath], {

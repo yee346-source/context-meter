@@ -29,3 +29,14 @@ test('respects segment order and skips unknown names', () => {
   const cfg = { ...DEFAULT_CONFIG, segments: ['model', 'wat', 'context'] };
   assert.equal(stripAnsi(renderLine(data, cfg)), 'Opus 4.8 · ▓▓▓▓▓▓░░░░ 62%');
 });
+
+test('drops a segment that throws internally instead of failing the whole line', () => {
+  const cfg = {
+    ...DEFAULT_CONFIG,
+    segments: ['context'],
+    bar: { ...DEFAULT_CONFIG.bar, width: -1 }
+  };
+  const line = renderLine(data, cfg);
+  assert.equal(typeof line, 'string');
+  assert.equal(line, '');
+});

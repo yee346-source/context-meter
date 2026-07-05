@@ -32,6 +32,28 @@ test('context segment returns null without token data', () => {
   assert.equal(contextSegment(data({ contextTokens: null }), DEFAULT_CONFIG), null);
 });
 
+test('context segment threshold boundaries', () => {
+  // 120000 / 200000 = exactly 60% -> warn threshold, yellow
+  assert.ok(
+    contextSegment(data({ contextTokens: 120000 }), DEFAULT_CONFIG).includes('\x1b[33m')
+  );
+  // 160000 / 200000 = exactly 80% -> danger threshold, red
+  assert.ok(
+    contextSegment(data({ contextTokens: 160000 }), DEFAULT_CONFIG).includes('\x1b[31m')
+  );
+  // 119999 / 200000 = 59.9995%, rounds to 60% -> still yellow
+  assert.ok(
+    contextSegment(data({ contextTokens: 119999 }), DEFAULT_CONFIG).includes('\x1b[33m')
+  );
+});
+
+test('context segment clamps percentage at 100', () => {
+  assert.equal(
+    stripAnsi(contextSegment(data({ contextTokens: 260000 }), DEFAULT_CONFIG)),
+    '▓▓▓▓▓▓▓▓▓▓ 100%'
+  );
+});
+
 test('tokens segment formats compact counts', () => {
   assert.equal(tokensSegment(data(), DEFAULT_CONFIG), '124k/200k');
   assert.equal(compactTokens(950), '950');
@@ -52,4 +74,9 @@ test('cost and duration return null when data missing', () => {
 test('cost segment formats zero and negative values', () => {
   assert.equal(costSegment(data({ costUsd: 0 }), DEFAULT_CONFIG), '$0.00');
   assert.equal(costSegment(data({ costUsd: -1.42 }), DEFAULT_CONFIG), '-$1.42');
+});
+
+test('duration segment boundaries', () => {
+  assert.equal(durationSegment(data({ durationMs: 0 }), DEFAULT_CONFIG), '0m');
+  assert.equal(durationSegment(data({ durationMs: -1 }), DEFAULT_CONFIG), null);
 });
